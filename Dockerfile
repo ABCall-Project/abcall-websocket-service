@@ -21,6 +21,7 @@ COPY . /app
 COPY ./docker/nginx.conf /etc/nginx/nginx.conf
 
 EXPOSE 3005
+EXPOSE 9000
 
 COPY ./docker/start.sh /start.sh
 RUN chmod +x /start.sh

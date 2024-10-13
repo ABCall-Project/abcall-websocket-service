@@ -10,6 +10,7 @@ services:
       - ".:/app"
     ports:
       - "3009:3009"
+      - "9000:9000"
     env_file:
       - .env
     tty: true

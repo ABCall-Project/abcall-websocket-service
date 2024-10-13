@@ -35,7 +35,8 @@ else
 endif
 
 docker-gunicorn:
-	  gunicorn -w 4 --bind 127.0.0.1:$(PORT) wsgi:app
+	  gunicorn -w 4 --bind 127.0.0.1:$(PORT) wsgi:app &
+	  python websocket.py
 
 docker-up:
 	docker compose up --build
@@ -62,3 +63,6 @@ kubernetes-dev-down:
 	kubectl delete configMap/websocket-configmap
 	kubectl delete deploy/abcall-websocket-service
 	kubectl delete ingress/abcall-websocket-ingress
+
+run-websocket:
+	python websocket.py
