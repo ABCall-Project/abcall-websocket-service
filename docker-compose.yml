@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: abcall-websockets-service
+    restart: always
+    volumes:
+      - ".:/app"
+    ports:
+      - "3009:3009"
+    env_file:
+      - .env
+    tty: true
