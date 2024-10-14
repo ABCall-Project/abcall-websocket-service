@@ -16,5 +16,6 @@ RUN make activate
 RUN make install
 
 EXPOSE 3005
+EXPOSE 9000
 
 ENTRYPOINT ["sh", "./docker/entrypoint.sh"]
