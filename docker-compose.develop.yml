@@ -1,0 +1,26 @@
+services:
+  service:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    container_name: abcall-websockets-service
+    restart: always
+    volumes:
+      - ".:/app"
+    ports:
+      - "5009:3009"
+      - "10000:9000"
+    env_file:
+      - .env.local
+    tty: true
+    networks:
+      - service_net
+      - app_net
+
+networks:
+  service_net:
+    name: service_net
+    driver: bridge
+  app_net:
+    name: app_net
+    driver: bridge

@@ -1,0 +1,55 @@
+###################################
+# abcall-websocket-service
+###################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: abcall-websocket-service
+  labels:
+    app: abcall-websocket-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: abcall-websocket-service
+  template:
+    metadata:
+      labels:
+        app: abcall-websocket-service
+    spec:
+      containers:
+        - name: abcall-websocket-service
+          image: abcall.azurecr.io/abcall-websocket-service:1.0.0
+          env:
+            - name: "FLASK_APP"
+              valueFrom:
+                configMapKeyRef:
+                  name: websocket-configmap
+                  key: FLASK_APP
+            - name: "FLASK_ENV"
+              valueFrom:
+                configMapKeyRef:
+                  name: websocket-configmap
+                  key: FLASK_ENV
+            - name: "APP_NAME"
+              valueFrom:
+                configMapKeyRef:
+                  name: websocket-configmap
+                  key: APP_NAME
+          ports:
+            - containerPort: 3009
+          imagePullPolicy: Always
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: abcall-websocket-service-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: abcall-websocket-service
+  ports:
+    - protocol: TCP
+      port: 3009
+      targetPort: 3009
