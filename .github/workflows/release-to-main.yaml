@@ -1,0 +1,41 @@
+name: Release
+on:
+    pull_request:
+      types:
+        - closed
+jobs:
+  tests:
+    name: Tests
+    if: success() && github.event.pull_request.merged == true && github.head_ref == 'develop'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout de repositorio
+      uses: actions/checkout@v2
+    - name: Environment configuration
+      uses: actions/setup-python@v2
+      with:
+          python-version: '3.9'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip 
+        pip install -r requirements.txt
+    - name: Running tests 🧪
+      id: test-running-id
+      run: |
+        make run-tests
+      env:
+        FLASK_ENV: test
+    - name: Validate results with errors
+      if: ${{ failure() }}
+      env:
+        ERROR_MESSAGE: One or various test failed 🔴
+      run: echo "::set-output name=answer::${ERROR_MESSAGE}"
+    - name: Validate result without errors
+      if: ${{ success() }}
+      env:
+        MESSAGE_SUCCESS: All the tests were success
+      run: echo "::set-output name=answer::${MESSAGE_SUCCESS}"
+    - name: Coverage calculation 📊
+      id: Coverage
+      run: |
+        make run-tests-coverage
