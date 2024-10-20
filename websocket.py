@@ -3,27 +3,25 @@ from flask_socketio import SocketIO, emit
 import json
 import uuid
 import re  # Importamos la librería de expresiones regulares
+from flaskr.utils import helper
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
+EMPTY_ERROR_RESPONSE = 'No entiendo tu solicitud, ¿podrías intentar nuevamente?'
 
-# Variables para almacenar el estado de la conversación
 waiting_for_description = False  # Si estamos esperando la descripción de un problema
 waiting_for_email = False  # Si estamos esperando el correo electrónico
 issue_description = None  # Descripción del problema
 issue_created = False  # Si se ha creado la incidencia
 user_email = None  # Correo electrónico del usuario
 
-# Función para validar el formato del correo electrónico
 def is_valid_email(email):
-    # Expresión regular para validar el formato de correo
     email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
     return re.match(email_regex, email)
 
 def chatbot_response(message):
     global waiting_for_description, waiting_for_email, issue_description, issue_created, user_email
 
-    # Convertir el mensaje a minúsculas y eliminar espacios innecesarios
     lower_cased_message = message.strip().lower()
 
     if 'error' in lower_cased_message:
@@ -39,18 +37,16 @@ def chatbot_response(message):
             waiting_for_description = True
             return "Por favor, describe el problema que estás experimentando para que podamos crear una incidencia."
     elif waiting_for_description:
-        # Guardamos la descripción del problema y pedimos el correo
         issue_description = message
         waiting_for_description = False
-        waiting_for_email = True  # Ahora esperamos el correo
+        waiting_for_email = True  
         return "Gracias. Por favor, proporciona tu correo electrónico para enviar la confirmación."
     elif waiting_for_email:
-        # Validamos el correo electrónico
         if is_valid_email(message):
             user_email = message
             issue_id = uuid.uuid4().hex
             issue_created = True
-            waiting_for_email = False  # Ya no estamos esperando el correo
+            waiting_for_email = False  
             #TODO Aca llamar el Servicio
             return f"Hemos creado la incidencia: {issue_id}, y hemos enviado tu extracto al correo {user_email}.\nGracias por escribirnos.\n¿Algo más en lo que pueda colaborarte?"
         else:
@@ -61,8 +57,11 @@ def chatbot_response(message):
     elif 'no' in lower_cased_message and issue_created:
         return "Cerraremos la incidencia por el momento. ¡Gracias por comunicarte!"
     
-    # Respuesta por defecto si no coincide con ninguna palabra clave
+    if helper.is_empty(message):
+        return EMPTY_ERROR_RESPONSE
+
     return "No entiendo tu mensaje. ¿Puedes reformularlo?"
+
 
 @app.route('/')
 def index():

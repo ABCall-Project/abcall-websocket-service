@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
         - name: abcall-websocket-service
-          image: abcall.azurecr.io/abcall-websocket-service:1.0.0
+          image: abcall.azurecr.io/abcall-websocket-service:{{IMAGE_TAG}}
           env:
             - name: "FLASK_APP"
               valueFrom:
