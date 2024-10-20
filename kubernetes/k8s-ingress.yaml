@@ -23,6 +23,13 @@ spec:
         path: /
         backend:
           service:
-            name: abcall-websocket-service-service
+            name: abcall-websocket-health
             port: 
               number: 3009
+      - pathType: Prefix
+        path: /ws
+        backend:
+          service:
+            name: abcall-websocket-service
+            port:
+              number: 9000
