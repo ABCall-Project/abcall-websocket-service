@@ -4,10 +4,15 @@ import json
 import uuid
 import re  # Importamos la librería de expresiones regulares
 from flaskr.utils import helper
+import requests
+from  config import Config
 
+config = Config()
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 EMPTY_ERROR_RESPONSE = 'No entiendo tu solicitud, ¿podrías intentar nuevamente?'
+AUTH_USER_AGENT_ID = '5541639d-2509-4a5d-9877-588d351bb92f'
+HOST = config.URL_ISSUES_SERVICE
 
 waiting_for_description = False  # Si estamos esperando la descripción de un problema
 waiting_for_email = False  # Si estamos esperando el correo electrónico
@@ -15,11 +20,8 @@ issue_description = None  # Descripción del problema
 issue_created = False  # Si se ha creado la incidencia
 user_email = None  # Correo electrónico del usuario
 
-def is_valid_email(email):
-    email_regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-    return re.match(email_regex, email)
-
-def chatbot_response(message):
+def chatbot_response(message,user_id):
+    
     global waiting_for_description, waiting_for_email, issue_description, issue_created, user_email
 
     lower_cased_message = message.strip().lower()
@@ -40,42 +42,40 @@ def chatbot_response(message):
         issue_description = message
         waiting_for_description = False
         waiting_for_email = True  
-        return "Gracias. Por favor, proporciona tu correo electrónico para enviar la confirmación."
-    elif waiting_for_email:
-        if is_valid_email(message):
-            user_email = message
-            issue_id = uuid.uuid4().hex
-            issue_created = True
-            waiting_for_email = False  
-            #TODO Aca llamar el Servicio
-            return f"Hemos creado la incidencia: {issue_id}, y hemos enviado tu extracto al correo {user_email}.\nGracias por escribirnos.\n¿Algo más en lo que pueda colaborarte?"
-        else:
-            # Si el correo no es válido, pedimos nuevamente
-            return "El formato del correo es inválido. Por favor, proporciona un correo válido."
+        payload = {
+            "auth_user_id": user_id,
+            "auth_user_agent_id": AUTH_USER_AGENT_ID,
+            "subject": 'Incidente por chatbot',
+            "description": issue_description
+            }
+        try:
+            response = requests.post(f"{HOST}/issue/post", json=payload)
+            response.raise_for_status() 
+            return f"Hemos creado la incidencia.\nGracias por escribirnos.\n¿Algo más en lo que pueda colaborarte?"
+        except requests.exceptions.RequestException as e:
+            print(f"Error al crear el Issue: {e}")
+            return f"Hubo un error al crear la incidencia:"
+
     elif lower_cased_message == '3':
         return "Te estoy conectando con un agente..."
     elif 'no' in lower_cased_message and issue_created:
         return "Cerraremos la incidencia por el momento. ¡Gracias por comunicarte!"
-    
-    if helper.is_empty(message):
-        return EMPTY_ERROR_RESPONSE
 
-    return "No entiendo tu mensaje. ¿Puedes reformularlo?"
+    return EMPTY_ERROR_RESPONSE
 
 
 @app.route('/')
 def index():
-    return "El servidor WebSocket del chatbot está en funcionamiento"
+    return "Chatbot WebSocket server is running"
 
 @socketio.on('message')
 def handle_message(message):
     data = json.loads(message)
-    user_id = data.get('userId', 'unknown_user')
-    user_message = data.get('message', '')
-    print(f"Mensaje recibido del cliente: {user_message} y ID {user_id}")
+    user_id = data.get('userId')
+    user_message = data.get('message')
 
     # Procesar el mensaje y generar una respuesta
-    response = chatbot_response(message)
+    response = chatbot_response(user_message,user_id)
     emit('response', response)
 
 if __name__ == '__main__':
