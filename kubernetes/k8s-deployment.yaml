@@ -38,6 +38,7 @@ spec:
                   key: APP_NAME
           ports:
             - containerPort: 3009
+            - containerPort: 9000
           imagePullPolicy: Always
 
 ---
@@ -50,6 +51,11 @@ spec:
   selector:
     app: abcall-websocket-service
   ports:
-    - protocol: TCP
+    - name: service-port
+      protocol: TCP
       port: 3009
       targetPort: 3009
+    - name: websocket-port
+      protocol: TCP
+      port: 9000
+      targetPort: 9000
