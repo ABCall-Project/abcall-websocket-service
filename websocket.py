@@ -1,9 +1,11 @@
 from flask import Flask
 from flask_socketio import SocketIO, emit
 import random
+from flaskr.utils import helper
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
+EMPTY_ERROR_RESPONSE = 'No entiendo tu solicitud, ¿podrías intentar nuevamente?'
 
 def chatbot_response(message):
     responses = [
@@ -12,6 +14,10 @@ def chatbot_response(message):
         "Feel free to ask me anything.",
         "I am a chatbot, how can I assist you today?"
     ]
+
+    if helper.is_empty(message):
+        return EMPTY_ERROR_RESPONSE
+        
 
     return random.choice(responses)
 
