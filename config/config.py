@@ -14,3 +14,4 @@ class Config:
     ENVIRONMENT = environment
     APP_NAME=os.getenv('APP_NAME')
     URL_REPORTS_SERVICE=os.getenv('URL_REPORTS_SERVICE')
+    URL_ISSUES_SERVICE= os.getenv('URL_ISSUES_SERVICE')
