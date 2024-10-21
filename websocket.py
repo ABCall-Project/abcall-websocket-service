@@ -58,7 +58,7 @@ def chatbot_response(message,user_id):
 
     elif lower_cased_message == '3':
         return "Te estoy conectando con un agente..."
-    elif 'no' in lower_cased_message and issue_created:
+    elif 'no' in lower_cased_message or issue_created:
         return "Cerraremos la incidencia por el momento. ¡Gracias por comunicarte!"
 
     return EMPTY_ERROR_RESPONSE
