@@ -6,3 +6,4 @@ data:
   FLASK_APP: "flaskr/app"
   FLASK_ENV: "production"
   APP_NAME: "abcall-websocket-service"
+  URL_ISSUES_SERVICE: "http://api-issue:3007"

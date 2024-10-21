@@ -36,6 +36,11 @@ spec:
                 configMapKeyRef:
                   name: websocket-configmap
                   key: APP_NAME
+            - name: "URL_ISSUES_SERVICE"
+              valueFrom:
+                configMapKeyRef:
+                  name: websocket-configmap
+                  key: URL_ISSUES_SERVICE
           ports:
             - containerPort: 3009
             - containerPort: 9000
