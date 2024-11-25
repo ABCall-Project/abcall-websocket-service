@@ -3,7 +3,7 @@ activate:
         echo "Python 🐍 environment was activated"; \
     else \
         echo "The folder environment doesn't exist"; \
-		python -m venv venv; \
+		python3 -m venv venv; \
         echo "The environment folder was created and the python 🐍 environment was activated"; \
     fi
 	. ./venv/bin/activate
@@ -22,7 +22,7 @@ run-tests:
 	 FLASK_ENV=test python -m unittest discover -s tests -p '*Test.py' -v
 
 run-tests-coverage:
-	 coverage run -m unittest discover
+	 FLASK_ENV=test coverage run -m unittest discover -s tests -p '*Test.py' -v
 	 coverage report -m
 	 coverage html
 	 coverage report --fail-under=50
