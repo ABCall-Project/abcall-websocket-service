@@ -6,6 +6,7 @@ import re  # Importamos la librería de expresiones regulares
 from flaskr.utils import helper
 import requests
 from  config import Config
+from flaskr.service.issueService import IssueService
 
 config = Config()
 app = Flask(__name__)
@@ -19,19 +20,20 @@ waiting_for_email = False  # Si estamos esperando el correo electrónico
 issue_description = None  # Descripción del problema
 issue_created = False  # Si se ha creado la incidencia
 user_email = None  # Correo electrónico del usuario
+waiting_for_ia_message = False
 
 def chatbot_response(message,user_id):
     
-    global waiting_for_description, waiting_for_email, issue_description, issue_created, user_email
+    global waiting_for_description, waiting_for_email, issue_description, issue_created, user_email, waiting_for_ia_message
 
     lower_cased_message = message.strip().lower()
 
     if 'error' in lower_cased_message:
         return "Parece que estás enfrentando un error. ¿Puedes darme más detalles?"
     elif 'hola' in lower_cased_message:
-        return "¡Hola! ¿En qué puedo ayudarte hoy?"
+        return "¡Hola! ¿En qué puedo ayudarte hoy? escribe la palabra 'opciones' para ver las opciones disponibles."
     elif 'opciones' in lower_cased_message or 'ayuda' in lower_cased_message:
-        return "Aquí tienes algunas opciones:\n1. Consultar tu saldo\n2. Reportar un problema\n3. Hablar con un agente"
+        return "Aquí tienes algunas opciones:\n1. Consultar tu saldo\n2. Reportar un problema\n3. Hablar con un agente\n 4. Conversar con un agente de IA 🤖"
     elif lower_cased_message == '1':
         return "Tu saldo actual es de $1000."
     elif lower_cased_message == '2' or 'incidente' in lower_cased_message:
@@ -58,6 +60,18 @@ def chatbot_response(message,user_id):
 
     elif lower_cased_message == '3':
         return "Te estoy conectando con un agente..."
+    elif lower_cased_message == '4' or waiting_for_ia_message:
+        if not waiting_for_ia_message:
+            waiting_for_ia_message = True
+            return "Por favor, escribe tu pregunta para el agente de IA"
+        else:
+            issue_service = IssueService()
+            response = issue_service.get_answer_ai(message)
+
+        if response is not None:
+            return response
+        else:
+            return "Lo siento, algo salio mal al procesar su consulta 😞"
     elif 'no' in lower_cased_message or issue_created:
         return "Cerraremos la incidencia por el momento. ¡Gracias por comunicarte!"
 
